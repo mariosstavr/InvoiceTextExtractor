@@ -9,18 +9,16 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-// Enable CORS (fixes "CORS policy" errors)
 app.use(cors());
 
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname));
 
-// Serve the HTML file at root URL
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "ocruploader.html"));
 });
 
-// Multer config for file uploads
+
 const upload = multer({ dest: "uploads/" });
 
 // Function to extract text from PDF
@@ -72,9 +70,9 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     } finally {
-        fs.unlinkSync(filePath); // Delete file after processing
+        fs.unlinkSync(filePath); 
     }
 });
 
-// Start the server
+
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));

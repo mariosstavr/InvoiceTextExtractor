@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice OCR Uploader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        #output { margin-top: 20px; white-space: pre-wrap; text-align: left; }
+    </style>
+</head>
+<body>
+    <h2>Upload Invoice (PDF or Image)</h2>
+    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png">
+    <button onclick="uploadFile()">Upload</button>
+    <div id="output"></div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            if (!fileInput.files.length) {
+                alert("Please select a file");
+                return;
+            }
+        
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+        
+            try {
+                const response = await fetch("http://localhost:3000/upload", {
+                    method: "POST",
+                    body: formData
+                });
+        
+                const result = await response.json();
+                displayInvoiceDetails(result);
+            } catch (error) {
+                document.getElementById("output").innerText = "Error: " + error.message;
+            }
+        }
+        
+        function displayInvoiceDetails(data) {
+            const output = document.getElementById("output");
+            output.innerHTML = `
+                <h3>Invoice Details</h3>
+                <table border="1" cellpadding="8" cellspacing="0">
+                    <tr><th>Seller</th><td>ΠΑΛΥΒΟΣ ΑΝΔ. ΘΕΟΔΩΡΟΣ</td></tr>
+                    <tr><th>VAT</th><td>${data.invoiceDetails.VAT}</td></tr>
+                    <tr><th>Date</th><td>${data.invoiceDetails.Date !== "Not found" ? data.invoiceDetails.Date : "N/A"}</td></tr>
+                    <tr><th>Total Price</th><td>${data.invoiceDetails.TotalPrice} €</td></tr>
+                </table>
+        
+                <h3>Extracted Text</h3>
+                <pre>${data.extractedText}</pre>
+            `;
+        }
+        
+    </script>
+    
+</body>
+</html>

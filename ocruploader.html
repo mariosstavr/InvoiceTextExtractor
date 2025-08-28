@@ -16,46 +16,60 @@
     <div id="output"></div>
 
     <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById("fileInput");
-            if (!fileInput.files.length) {
-                alert("Please select a file");
-                return;
-            }
-        
-            const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
-        
-            try {
-                const response = await fetch("http://localhost:3000/upload", {
-                    method: "POST",
-                    body: formData
-                });
-        
-                const result = await response.json();
-                displayInvoiceDetails(result);
-            } catch (error) {
-                document.getElementById("output").innerText = "Error: " + error.message;
+    async function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        if (!fileInput.files.length) {
+            alert("Please select a file");
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+    
+        try {
+            const response = await fetch("http://localhost:3000/upload", {
+                method: "POST",
+                body: formData
+            });
+    
+            const result = await response.json();
+            displayInvoiceDetails(result);
+        } catch (error) {
+            document.getElementById("output").innerText = "Error: " + error.message;
+        }
+    }
+    
+    function displayInvoiceDetails(data) {
+        const output = document.getElementById("output");
+
+        // --- Extract seller dynamically ---
+        let seller = "Not found";
+        if (data.extractedText) {
+            const lines = data.extractedText.split("\n").map(l => l.trim()).filter(Boolean);
+            // Heuristic: choose the first line that has uppercase letters and at least 3 characters
+            for (let line of lines) {
+                if (/[A-ZΑ-Ω]{3,}/.test(line)) {
+                    seller = line;
+                    break;
+                }
             }
         }
-        
-        function displayInvoiceDetails(data) {
-            const output = document.getElementById("output");
-            output.innerHTML = `
-                <h3>Invoice Details</h3>
-                <table border="1" cellpadding="8" cellspacing="0">
-                    <tr><th>Seller</th><td>ΠΑΛΥΒΟΣ ΑΝΔ. ΘΕΟΔΩΡΟΣ</td></tr>
-                    <tr><th>VAT</th><td>${data.invoiceDetails.VAT}</td></tr>
-                    <tr><th>Date</th><td>${data.invoiceDetails.Date !== "Not found" ? data.invoiceDetails.Date : "N/A"}</td></tr>
-                    <tr><th>Total Price</th><td>${data.invoiceDetails.TotalPrice} €</td></tr>
-                </table>
-        
-                <h3>Extracted Text</h3>
-                <pre>${data.extractedText}</pre>
-            `;
-        }
-        
-    </script>
+
+        output.innerHTML = `
+            <h3>Invoice Details</h3>
+            <table border="1" cellpadding="8" cellspacing="0">
+                <tr><th>Seller</th><td>${seller}</td></tr>
+                <tr><th>VAT</th><td>${data.invoiceDetails.VAT}</td></tr>
+                <tr><th>Date</th><td>${data.invoiceDetails.Date !== "Not found" ? data.invoiceDetails.Date : "N/A"}</td></tr>
+                <tr><th>Total Price</th><td>${data.invoiceDetails.TotalPrice} €</td></tr>
+            </table>
+
+            <h3>Extracted Text</h3>
+            <pre>${data.extractedText}</pre>
+        `;
+    }
+</script>
     
 </body>
 </html>
+
